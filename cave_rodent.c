@@ -9,7 +9,7 @@
 
 #define MAP_X 21
 #define MAP_Y 21
-#define SPRITE_SIZE 15
+#define SPRITE_SIZE 20
 
 void entity_chase();
 
@@ -601,7 +601,6 @@ void entity_chase(struct entity *entity) {
     }
 }
 
-
 void entity_queue() {
     if (entities_alives > 0) {
 	for (int visitor = 0; visitor <= entities_alives; visitor++) {
@@ -635,7 +634,7 @@ void update_screen(SDL_Rect *sprite,
 		   SDL_Texture *entity_dead_texture,		   
 		   SDL_Texture *button_texture) {
     
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // background color
+    SDL_SetRenderDrawColor(renderer, 129, 122, 8, 255); // background color
     SDL_RenderClear(renderer);
     
     for (int y = 0; y < MAP_Y; y++) {
