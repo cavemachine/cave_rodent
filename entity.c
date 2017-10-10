@@ -13,6 +13,12 @@ extern int entity_speed;
 extern int entity_speed_subcount;
 char blockers[] = {'B', 'D', 'E', 'e'};
 
+void clear_all_entities() {
+    for (int i = 0; i < 10; i++) {
+	entity_list[i].alive = false;
+	entity_list[i].active = false;
+    }
+}
 void create_entity(int y_, int x_) {
     entity_list[entities_alives].x = x_;
     entity_list[entities_alives].y = y_;
