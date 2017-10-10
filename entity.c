@@ -6,7 +6,12 @@ extern struct player player;
 extern struct entity entity_list[10];
 extern char map[MAP_Y][MAP_X];
 extern int level;
-
+extern int score;
+extern int cronometer;
+extern int crono_subcount;
+extern int entity_speed;
+extern int entity_speed_subcount;
+char blockers[] = {'B', 'D', 'E', 'e'};
 
 void create_entity(int y_, int x_) {
     entity_list[entities_alives].x = x_;
@@ -18,20 +23,34 @@ void create_entity(int y_, int x_) {
     entities_alives++;  
 }
 void entity_queue() {
-    if (entities_alives > 0) {
-	for (int visitor = 0; visitor <= entities_alives; visitor++) {
-	    if (entity_list[visitor].alive == true) {		
-		entity_freedom_check(&entity_list[visitor]);
-	    }
-	}
-    } else {
-	level++;
-	new_level(level);
-    }
     
-    printf("alive : %i ... actives : %i\n", entities_alives, entities_active);
+    entity_speed_subcount += 1;
+    if (entity_speed_subcount == entity_speed) {
+	printf("alive : %i ... actives : %i\n", entities_alives, entities_active);
+    	if (entities_alives > 0) {
+	    for (int visitor = 0; visitor <= entities_alives; visitor++) {
+		if (entity_list[visitor].alive == true) {		
+		    entity_freedom_check(&entity_list[visitor]);
+		}
+	    }
+	} else {
+	    level++;
+	    new_level(level);
+	}
+	entity_speed_subcount = 0;
+    }
+
+    crono_subcount += 1;
+    if (crono_subcount == 4) {
+	score += 3;
+	cronometer -= 1;
+	crono_subcount = 0;
+    }
+    if (cronometer == 0) {
+	//create more entities. TODO random location
+    }
 }
-bool entity_freedom_check(struct entity *entity) {
+void entity_freedom_check(struct entity *entity) {
     
     printf("entity_func\n");
     bool entity_free = false;
@@ -81,10 +100,8 @@ void entity_chase(struct entity *entity) {
     int initial_entity_x = entity->x;
     int initial_entity_y = entity->y;
     
-    bool random_moved = false;
     bool moved_lateral = false;
-    bool moved_diagonal = false;
-	
+    
     moved_lateral = try_lateral(entity);
 
     if (moved_lateral == false) {
@@ -100,20 +117,17 @@ void entity_chase(struct entity *entity) {
     }
 }
 bool try_lateral(struct entity *entity) {
-
     int init_ent_y = entity->y;
     int init_ent_x = entity->x;
-
     if (player.x < entity->x) {
-	if (map[entity->y][entity->x - 1] != 'B') {
-	    
+	if (!memchr(blockers, map[entity->y][entity->x - 1], strlen(blockers))) {	    
 	    map[entity->y][entity->x] = '0';
 	    entity->x -= 1;
 	    map[entity->y][entity->x] = 'E';
 	}
     } else {
 	if (player.x > entity->x) {
-	    if (map[entity->y][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y][entity->x + 1], strlen(blockers))) {	
 		map[entity->y][entity->x] = '0';
 		entity->x += 1;
 		map[entity->y][entity->x] = 'E';
@@ -121,14 +135,14 @@ bool try_lateral(struct entity *entity) {
 	} 
     }
     if (player.y < entity->y) {
-      	if (map[entity->y - 1][entity->x] != 'B') {
+	if (!memchr(blockers, map[entity->y - 1][entity->x], strlen(blockers))) {
 	    map[entity->y][entity->x] = '0';
 	    entity->y -= 1;
 	    map[entity->y][entity->x] = 'E';
 	}
     } else {
 	if (player.y > entity->y) {
-	    if (map[entity->y + 1][entity->x] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';		    
 		entity->y += 1;
 		map[entity->y][entity->x] = 'E';
@@ -143,7 +157,7 @@ bool try_lateral(struct entity *entity) {
 }
 void try_diagonal(struct entity *entity) {
     if (player.y < entity->y && player.x < entity->x) {
-	if (map [entity->y - 1][entity->x - 1] != 'B') {
+	if (!memchr(blockers, map[entity->y - 1][entity->x - 1], strlen(blockers))) {
 	    map[entity->y][entity->x] = '0';		    
 	    entity->y -= 1;
 	    entity->x -= 1;
@@ -151,16 +165,15 @@ void try_diagonal(struct entity *entity) {
 	}
     }
     if (player.y < entity->y && player.x > entity->x) {
-	if (map [entity->y - 1][entity->x + 1] != 'B') {
+	if (!memchr(blockers, map[entity->y - 1][entity->x + 1], strlen(blockers))) {
 	    map[entity->y][entity->x] = '0';		    
 	    entity->y -= 1;
 	    entity->x += 1;
-	    map[entity->y][entity->x] = 'E';
-	
+	    map[entity->y][entity->x] = 'E';	
 	}
     }
     if (player.y > entity->y && player.x < entity->x) {
-	if (map [entity->y + 1][entity->x - 1] != 'B') {
+      if (!memchr(blockers, map[entity->y + 1][entity->x - 1], strlen(blockers))) {
 	    map[entity->y][entity->x] = '0';		    
 	    entity->y += 1;
 	    entity->x -= 1;
@@ -168,7 +181,7 @@ void try_diagonal(struct entity *entity) {
 	}
     }
     if (player.y > entity->y && player.x > entity->x) {
-	if (map [entity->y + 1][entity->x + 1] != 'B') {
+	if (!memchr(blockers, map[entity->y + 1][entity->x + 1], strlen(blockers))) {
 	    map[entity->y][entity->x] = '0';		    
 	    entity->y += 1;
 	    entity->x += 1;
@@ -195,7 +208,7 @@ void try_contour_obstacules(struct entity *entity) {
     switch (direction) {
     case 'q':
 	if (entity->y - 1 >= 0 && entity->x + 1 < MAP_X) {
-	    if (map[entity->y - 1][entity->x + 1] != 'B') {
+	   if (!memchr(blockers, map[entity->y - 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x + 1;
@@ -203,7 +216,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x - 1 >= 0) {
-	    if (map[entity->y + 1][entity->x - 1] != 'B') {
+	   if (!memchr(blockers, map[entity->y + 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x - 1;
@@ -213,7 +226,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'w':
 	if (entity->y - 1 >= 0 && entity->x - 1 >= 0) {
-	    if (map[entity->y - 1][entity->x - 1] != 'B') {
+      	   if (!memchr(blockers, map[entity->y - 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x - 1;
@@ -221,7 +234,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y - 1 >= 0 && entity->x + 1 < MAP_X) {
-	    if (map[entity->y - 1][entity->x + 1] != 'B') {
+	if (!memchr(blockers, map[entity->y - 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x + 1;
@@ -231,7 +244,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'e':
 	if (entity->y - 1 >= 0 && entity->x - 1 >= 0) {
-	    if (map[entity->y - 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y - 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x - 1;
@@ -239,7 +252,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x + 1 < MAP_X) {
-	    if (map[entity->y + 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x + 1;
@@ -249,7 +262,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'd':
 	if (entity->y - 1 >= 0 && entity->x + 1 < MAP_X) {
-	    if (map[entity->y - 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y - 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x + 1;
@@ -257,7 +270,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x + 1 < MAP_X) {
-	    if (map[entity->y + 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x + 1;
@@ -267,7 +280,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'c':
 	if (entity->y - 1 >= 0 && entity->x + 1 < MAP_X) {
-	    if (map[entity->y - 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y - 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x + 1;
@@ -275,7 +288,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x - 1 >= 0) {
-	    if (map[entity->y + 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x - 1;
@@ -285,7 +298,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'x':
 	if (entity->y + 1 < MAP_Y && entity->x + 1 < MAP_X) {
-	    if (map[entity->y + 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x + 1;
@@ -293,7 +306,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x - 1 >= 0) {
-	    if (map[entity->y + 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x - 1;
@@ -303,7 +316,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'z':
 	if (entity->y - 1 >= 0 && entity->x - 1 >= 0) {
-	    if (map[entity->y - 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y - 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x - 1;
@@ -311,7 +324,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y + 1 < MAP_Y && entity->x + 1 < MAP_X) {
-	    if (map[entity->y + 1][entity->x + 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x + 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x + 1;
@@ -321,7 +334,7 @@ void try_contour_obstacules(struct entity *entity) {
 	break;
     case 'a':
 	if (entity->y + 1 < MAP_Y && entity->x - 1 >= 0) {
-	    if (map[entity->y + 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y + 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y + 1;
 		entity->x = entity->x - 1;
@@ -329,7 +342,7 @@ void try_contour_obstacules(struct entity *entity) {
 	    }
 	}
 	if (entity->y - 1 >= 0 && entity->x - 1 >= 0) {
-	    if (map[entity->y - 1][entity->x - 1] != 'B') {
+	    if (!memchr(blockers, map[entity->y - 1][entity->x - 1], strlen(blockers))) {
 		map[entity->y][entity->x] = '0';
 		entity->y = entity->y - 1;
 		entity->x = entity->x - 1;
@@ -351,4 +364,5 @@ void kill_them_all() {
 	}
     }
     entities_alives = 0;
+    cronometer += 30;
 }

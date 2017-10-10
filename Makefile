@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-I.
+CFLAGS=-g -Wall
 DEPS = cave_rodent.h
 OBJ = cave_rodent.o movement.o entity.o 
 LIBS = -lSDL2

@@ -17,9 +17,10 @@ void move_block(char move_direction) {
     
     if (move_direction == 'd') {
 	while (y < MAP_Y) {
-	    if (map[y][player.x] == '0' || map[y][player.x] == 'e') {
+	    if (map[y][player.x] == '0' || map[y][player.x] == 'e' || map[y][player.x] == 'D') {
 		if (map[y][player.x] == '0') { can_move_empty = true; }
-	       	if (map[y][player.x] == 'e') { can_move_inactive = true; }
+		if (map[y][player.x] == 'D') { can_move_empty = true; }
+	       	if (map[y][player.x] == 'e') { can_move_inactive = true; }		
 		break;
 	    } else {
 		y++;
@@ -57,8 +58,8 @@ void move_block(char move_direction) {
 		    
     if (move_direction == 'u') {
 	while (y >= 0) {
-	    if (map[y][player.x] == '0' || map[y][player.x] == 'e') {
-		if (map[y][player.x] == '0') { can_move_empty = true; }
+	    if (map[y][player.x] == '0' || map[y][player.x] == 'e' || map[y][player.x] == 'D') {
+		if (map[y][player.x] == '0' || map[y][player.x] == 'D') { can_move_empty = true; }
 	       	if (map[y][player.x] == 'e') { can_move_inactive = true; }
 		break;
 	    } else {
@@ -97,8 +98,8 @@ void move_block(char move_direction) {
     
     if (move_direction == 'l') {
 	while (x >= 0) {
-	    if (map[player.y][x] == '0' || map[player.y][x] == 'e') {
-		if (map[player.y][x] == '0') { can_move_empty = true; }
+	    if (map[player.y][x] == '0' || map[player.y][x] == 'e' || map[player.y][x] == 'D') {
+		if (map[player.y][x] == '0' || map[player.y][x] == 'D') { can_move_empty = true; }
 	       	if (map[player.y][x] == 'e') { can_move_inactive = true; }
 		break;
 	    } else {
@@ -137,8 +138,8 @@ void move_block(char move_direction) {
     
     if (move_direction == 'r') {
 	while (x < MAP_X) {
-	    if (map[player.y][x] == '0' || map[player.y][x] == 'e') {
-		if (map[player.y][x] == '0') { can_move_empty = true; }
+	    if (map[player.y][x] == '0' || map[player.y][x] == 'e' || map[player.y][x] == 'D') {
+		if (map[player.y][x] == '0' || map[player.y][x] == 'D') { can_move_empty = true; }
 	       	if (map[player.y][x] == 'e') { can_move_inactive = true; }
 		break;
 	    } else {
