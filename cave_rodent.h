@@ -56,6 +56,7 @@ SDL_Surface* entity_not_active_surface;
 SDL_Surface* entity_dead_surface;
 SDL_Surface* status_surface;
 SDL_Surface* status_mouse_surface;
+SDL_Surface* initial_menu_surface;
   
 SDL_Texture* button_texture;
 SDL_Texture* player_texture;
@@ -64,13 +65,16 @@ SDL_Texture* entity_not_active_texture;
 SDL_Texture* entity_dead_texture;
 SDL_Texture* status_texture;
 SDL_Texture* status_mouse_texture;
-     
+SDL_Texture* initial_menu_texture;
+
+SDL_Rect initial_menu_rect;
 SDL_Rect sprite;
 SDL_Rect status_bar;
 
 struct player player;
 struct entity entity_list[10];
 
+bool paused;
 int entities_active;
 int entities_alives;
 int level;
@@ -78,6 +82,7 @@ int lifes;
 int score;
 int cronometer;
 int crono_subcount;
+int game_speed;
 int entity_speed; // 4 = 1s ; 3 = 750ms ; 2 = 500 ms ; 1 = 250 ms
 int entity_speed_subcount;
 bool initial_menu;
@@ -107,3 +112,4 @@ void initialize_variables();
 void update_screen_score();
 void update_screen_cronometer();
 void update_screen_life();
+void show_number(int number, int win_y, int win_x);

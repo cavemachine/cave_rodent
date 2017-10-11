@@ -1,6 +1,5 @@
 #include "cave_rodent.h"
 
-
 const char map_1[MAP_Y][MAP_X] =
 {{'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'},
  {'0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0','0'},
@@ -26,19 +25,14 @@ const char map_1[MAP_Y][MAP_X] =
 
 char map[MAP_Y][MAP_X];
 
-//----------------INTERFACE
 
 void show_initial_menu() {
     
 	initialize_timer(0);
-	SDL_Surface* initial_menu_surface = NULL;
-	SDL_Texture* initial_menu_texture = NULL;
 	initial_menu_surface      = SDL_LoadBMP("img/sprite_setup.bmp");
 	initial_menu_texture      = SDL_CreateTextureFromSurface(renderer,
 								 initial_menu_surface);
 	SDL_FreeSurface(initial_menu_surface);
-	
-	SDL_Rect initial_menu_rect;	
 	initial_menu_rect.h = 118;
 	initial_menu_rect.w = 299;
 	initial_menu_rect.x = 80;
@@ -51,27 +45,23 @@ void show_initial_menu() {
 	marker_speed.x = 200;
 	marker_speed.y = 67;
 	
-	SDL_Rect marker_map;
-	marker_map.h = 15;
-	marker_map.w = 75;
-	marker_map.x = 290;
-	marker_map.y = 70;
-	
-	SDL_RenderDrawRect(renderer, &marker_speed);
-	SDL_RenderDrawRect(renderer, &marker_map);	
+
+	SDL_RenderDrawRect(renderer, &marker_speed);	
 	SDL_RenderPresent(renderer);
-	
+
+	int level_value = 1;
 	SDL_bool done = SDL_FALSE;
 	while(!done) {
 	    SDL_Event event;
 	    while (SDL_PollEvent(&event)) {		
 		if(event.type == SDL_QUIT) {
-		    done = SDL_TRUE;
+		    SDL_Quit();
+		    exit (0);
 		}
 		if(event.type == SDL_KEYUP) {
 		    if (event.key.keysym.sym == SDLK_n) {
 			new_level(level);
-			initialize_timer(250000);
+			initialize_timer(game_speed);
 			done = SDL_TRUE;	       	   
 		    }
 		    if (event.key.keysym.sym == SDLK_1) {
@@ -82,7 +72,6 @@ void show_initial_menu() {
 			marker_speed.x = 200;
 			marker_speed.y = 67;
 			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
 			SDL_RenderPresent(renderer);			
 		    }
 		    if (event.key.keysym.sym == SDLK_2) {
@@ -91,9 +80,8 @@ void show_initial_menu() {
 			marker_speed.h = 15;
 			marker_speed.w = 85;
 			marker_speed.x = 200;
-			marker_speed.y = 82;
+			marker_speed.y = 81;
 			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
 			SDL_RenderPresent(renderer);			
 		    }
 		    if (event.key.keysym.sym == SDLK_3) {
@@ -104,48 +92,33 @@ void show_initial_menu() {
 			marker_speed.x = 200;
 			marker_speed.y = 95;			
 			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
 			SDL_RenderPresent(renderer);			
 		    }
-		    if (event.key.keysym.sym == SDLK_a) {
-			SDL_RenderCopy(renderer, initial_menu_texture,
-				       NULL, &initial_menu_rect);
-			marker_map.h = 15;
-			marker_map.w = 75;
-			marker_map.x = 290;
-			marker_map.y = 70;
-			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
-			SDL_RenderPresent(renderer);			
+		}
+		if(event.type == SDL_MOUSEBUTTONUP) {
+		    int mouse_x;
+		    int mouse_y;
+		    SDL_GetMouseState(&mouse_x, &mouse_y);
+		    if (mouse_y >= 77 && mouse_y <= 92) {
+			if (mouse_x >= 297 && mouse_x <= 311) {
+			    if (level_value > 1) {
+				level_value--;
+				show_number(level_value, 80, 330);
+			    }
+			}
+			if (mouse_x >= 349 && mouse_x <= 364) {
+			    if (level_value < 50) {
+				level_value++;
+				show_number(level_value, 80, 330);
+			    }
+			}
 		    }
-		    if (event.key.keysym.sym == SDLK_b) {
-			SDL_RenderCopy(renderer, initial_menu_texture,
-				       NULL, &initial_menu_rect);
-			marker_map.h = 15;
-			marker_map.w = 75;
-			marker_map.x = 290;
-			marker_map.y = 82;
-			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
-			SDL_RenderPresent(renderer);			
-		    }
-		    if (event.key.keysym.sym == SDLK_c) {
-			SDL_RenderCopy(renderer, initial_menu_texture,
-				       NULL, &initial_menu_rect);
-			marker_map.h = 15;
-			marker_map.w = 75;
-			marker_map.x = 290;
-			marker_map.y = 95;
-			SDL_RenderDrawRect(renderer, &marker_speed);
-			SDL_RenderDrawRect(renderer, &marker_map);
-			SDL_RenderPresent(renderer);			
-		    }		    
 		}
 	    }
+	    SDL_RenderPresent(renderer);
 	    SDL_Delay(50);	
 	}
 }
-
 void show_game_over() {
     
     initialize_timer(0);
@@ -186,6 +159,99 @@ void show_game_over() {
 	    SDL_RenderPresent(renderer);
 	}
 }
+void show_paused() {
+    SDL_Surface* paused_surface;
+    SDL_Texture* paused_texture;
+    paused_surface      = SDL_LoadBMP("img/sprite_paused.bmp");
+    paused_texture      = SDL_CreateTextureFromSurface(renderer, paused_surface);
+    SDL_FreeSurface(paused_surface);
+	
+    SDL_Rect paused_rect;
+    paused_rect.h = 50;
+    paused_rect.w = 150;
+    paused_rect.x = 135;
+    paused_rect.y = 165;
+    
+    SDL_RenderCopy(renderer, paused_texture, NULL, &paused_rect);
+
+    SDL_bool done = SDL_FALSE;
+    while(!done) {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {		
+	    if(event.type == SDL_QUIT) {
+		SDL_Quit();
+		exit (0);
+	    }
+	    if(event.type == SDL_KEYUP) {
+		if (event.key.keysym.sym == SDLK_p) {
+		    paused = false;
+		    initialize_timer(game_speed);
+		    done = SDL_TRUE;
+		    
+		}
+	    }
+	
+	}
+	SDL_RenderPresent(renderer);
+	SDL_Delay(50);
+    }
+}
+
+void show_number(int number, int win_y, int win_x) {
+    
+    SDL_Rect numbers_rect;
+    numbers_rect.w = 12;
+    numbers_rect.h = 12;
+    numbers_rect.y = win_y;
+
+    SDL_RenderCopy(renderer, initial_menu_texture, NULL, &initial_menu_rect);
+    
+    SDL_Texture *tmp_texture;
+    int initial_x = win_x;
+    int digit;
+    
+    int number_digits = number;
+    while (number_digits > 0) {	
+	digit = number_digits % 10;	
+	numbers_rect.x = initial_x;
+	switch (digit) {
+	case 0:
+	    tmp_texture = n0_texture;
+	    break;
+	case 1:
+	    tmp_texture = n1_texture;
+	    break;
+	case 2:
+	    tmp_texture = n2_texture;
+	    break;
+	case 3:
+	    tmp_texture = n3_texture;
+	    break;
+	case 4:
+	    tmp_texture = n4_texture;
+	    break;
+	case 5:
+	    tmp_texture = n5_texture;
+	    break;
+	case 6:
+	    tmp_texture = n6_texture;
+	    break;
+	case 7:
+	    tmp_texture = n7_texture;
+	    break;
+	case 8:
+	    tmp_texture = n8_texture;
+	    break;
+	case 9:
+	    tmp_texture = n9_texture;
+	    break;
+	}
+	SDL_RenderCopy(renderer, tmp_texture, NULL, &numbers_rect);
+	number_digits /= 10;
+	initial_x -= 12;
+    }
+    SDL_RenderPresent(renderer);
+}
 
 void new_level(int level_) {
     clear_all_entities();
@@ -211,12 +277,12 @@ void new_level(int level_) {
     player.y = 10;
     map[player.y][player.x] = 'P';
 }
-
 void gotcha() {
 
     printf("GOTCHA\n");
     lifes -= 1;
 }
+
 
 void initialize_window() {
     
@@ -287,6 +353,39 @@ void initialize_window() {
     SDL_FreeSurface(status_mouse_surface); 
 }
 
+void copy_map(int id) {
+    
+    FILE *fmap;    
+    char buffer[100];
+    char id_tag[10];
+
+    snprintf(id_tag, sizeof(id_tag), "%d=", id); // concat int + char into char
+    fmap = fopen("maps.dat","r");
+
+    while (strcmp(buffer,id_tag) != 0) { //find the id line	
+	fscanf(fmap,"%s", buffer);
+    }
+    
+    char c[1];
+    for (int y = 0; y < MAP_Y; y++) {
+	for (int x = 0; x < MAP_X; x++) {
+	    fscanf(fmap,"%c", c);
+	    if (c[0] == '#' ) {	break; }
+	    if (c[0] != '\n' ) {
+		map[y][x] = c[0];
+	    } else {
+		if (x == 0) {
+		    x = 20;
+		    y--;
+		} else {
+		    x--;
+		}
+	    }
+	}
+    }
+    fclose(fmap);
+}
+
 void initialize_variables() {
 
     entities_active = 0;
@@ -298,6 +397,7 @@ void initialize_variables() {
     crono_subcount = 0;
     entity_speed = 4; // 4 = 1s ; 3 = 750ms ; 2 = 500 ms ; 1 = 250 ms
     entity_speed_subcount = 0;
+    game_speed = 250000;
 
     sprite.w = SPRITE_SIZE;
     sprite.h = SPRITE_SIZE;
@@ -306,15 +406,16 @@ void initialize_variables() {
     status_bar.x = 0;
     status_bar.y = 420; 
 
+    copy_map(1);
+    // memcpy(map,map_1, sizeof(char)*400);
 
-    memcpy(map,map_1, sizeof(char)*400);    
+    
     player.x = 10;
     player.y = 10;
     map[player.y][player.x] = 'P';
 
     initial_menu = true;
 }
-
 void initialize_timer(int speed) {
     struct itimerval it;
     srand(time(NULL));
@@ -324,7 +425,6 @@ void initialize_timer(int speed) {
     setitimer(ITIMER_REAL, &it, NULL);
     signal(SIGALRM,entity_queue);
 }
-
 void manage_keys(SDL_Event *event) {
     char move_direction;
     
@@ -350,11 +450,17 @@ void manage_keys(SDL_Event *event) {
       	printf("entity2 y: %i\n", entity_list[1].y);	
     }
     
-    //------------------ 'm' key: initial menu
-        if (event->key.keysym.sym == SDLK_m) { 
-	    show_initial_menu(renderer);
+    //------------------ 'n' key: new game
+    if (event->key.keysym.sym == SDLK_n) { 
+	new_level(1);
     }
-	
+    
+    if (event->key.keysym.sym == SDLK_p) {
+	if (paused == false) {
+	    initialize_timer(0);
+	    show_paused();
+	} 
+    }	
     //------------------Arrow keys: player moviment
     char map_element;
     if (event->key.keysym.sym == SDLK_DOWN) {
@@ -414,6 +520,7 @@ void manage_keys(SDL_Event *event) {
 	}		    
     }
 }
+
 
 void update_screen(){
     	 
